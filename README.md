@@ -66,6 +66,7 @@ Just like that, you're ready to store your stuff!
 POST http://**host**:**port**/**key** ( JSON **value** in the body of the POST )
 
 HTTP 201 "Object successfully added"
+
 *fails if object already exists*
 
 ###READ
@@ -79,6 +80,7 @@ HTTP 200 *The JSON you've POSTed against this key*
 PUT http://**host**:**port**/**key** ( JSON **value** in the body of the POST )
 
 HTTP 201 "Object successfully updated"
+
 *fails if object doesn't exist*
 
 ###DELETE
@@ -86,6 +88,7 @@ HTTP 201 "Object successfully updated"
 DELETE http://**host**:**port**/**key**
 
 HTTP 200 "Object successfully deleted"
+
 *fails if object doesn't exist*
 
 ###Dehydrated Lists
