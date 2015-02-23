@@ -4,7 +4,7 @@ rapidapi
 Store your stuff, rapidly ... rapidapidly.
 ---------------------------------------
 
-A schema-less API, which lets storing &amp; retrieving your stuff get out of your way.
+*A schema-less API, which lets storing &amp; retrieving your stuff get out of your way.*
 
 rapidapi (pronounced *rah-pee-dah-pee*) is a simple key/value store behind an HTTP API, that supports a CREATE/READ/UPDATE/DELETE model, with support for dehydrated lists (more about these later). This model is only enabled if the configuration rapidapi is provided with at startup contains a *redis* attribute, even if it is empty. *If it is empty, the redis settings will default to **host='localhost'** and **port=6379**.*
 
