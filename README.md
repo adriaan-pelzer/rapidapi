@@ -6,9 +6,15 @@ Store your stuff, rapidly ... rapidapidly.
 
 *A schema-less API, which lets storing &amp; retrieving your stuff get out of your way.*
 
-rapidapi (pronounced *rah-pee-dah-pee*) is a simple key/value store behind an HTTP API, that supports a CREATE/READ/UPDATE/DELETE model, with support for dehydrated lists (more about these later). This model is only enabled if the configuration rapidapi is provided with at startup contains a *redis* attribute, even if it is empty. *If it is empty, the redis settings will default to **host='localhost'** and **port=6379**.*
+Rapidapi (pronounced *rah-pee-dah-pee*) is a simple key/value store behind an HTTP API, that supports a CREATE/READ/UPDATE/DELETE (CRUD) model, with support for dehydrated lists (more about these later).
 
-It also supports a *docroot* style set of user-defined query handlers, which can be used to build custom endpoints, in addition to the normal CRUD model described above. This model is only enabled if the *docRoot* parameter is provided at startup, and the *docroot* folder is not empty.
+The CRUD model is only enabled if the configuration rapidapi is provided with at startup contains a *redis* attribute, even if it is empty.
+
+If it is empty, the redis settings will default to **host='localhost'** and **port=6379**.
+
+Rapidapi also supports a *docroot* style set of user-defined query handlers, which can be used to build custom endpoints, in addition to the normal CRUD model described above.
+
+This model is only enabled if the *docRoot* parameter is provided at startup, and the *docroot* folder is not empty.
 
 ##INSTALL
 
