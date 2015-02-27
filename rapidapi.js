@@ -23,6 +23,11 @@ var methodHandlerFactory = R.curry ( function ( method, routeHandler ) {
                     return next ( new restify[error.type] ( error.message ) );
                 }
 
+                if ( error.code ) {
+                    res.send ( error.code, error.message );
+                    return next ();
+                }
+
                 return next ( new restify.InternalServerError ( error ) );
             }
 
