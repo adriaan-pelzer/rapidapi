@@ -1,7 +1,7 @@
 {
-  "name": "RapidAPI",
+  "name": "rapidapi",
   "version": "1.0.0",
-  "description": "A generic API framework, built on restify",
+  "description": "A schema-less API, which lets storing & retrieving your stuff get out of your way",
   "main": "rapidapi.js",
   "dependencies": {
     "restify": "~2.8.5",
