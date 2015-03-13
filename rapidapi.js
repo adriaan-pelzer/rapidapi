@@ -100,11 +100,19 @@ module.exports = function ( routeRoot, config, callBack ) {
             } )
             .collect ()
             .each ( function ( result ) {
-                return callBack ( null, setupRapidapi ( config, supportedMethods, server ) );
+                if ( config && config.enableRapidapi ) {
+                    return callBack ( null, setupRapidapi ( config, supportedMethods, server ) );
+                }
+
+                return callBack ( null, server );
             } );
     }
 
-    return callBack ( null, setupRapidapi ( config, supportedMethods, server ) );
+    if ( config && config.enableRapidapi ) {
+        return callBack ( null, setupRapidapi ( config, supportedMethods, server ) );
+    }
+
+    return callBack ( null, server );
 };
 
 if ( ! module.parent ) {
