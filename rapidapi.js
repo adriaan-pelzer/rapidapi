@@ -1,6 +1,6 @@
 var restify = require ( 'restify' );
 var path = require ( 'path' );
-var packageJson = require ( path.resolve ( 'package.json' ) );
+var packageJson = require ( './package.json' );
 var recursive = require ( 'recursive-readdir' );
 var hl = require ( 'highland' );
 var R = require ( 'ramda' );
@@ -41,7 +41,7 @@ var supportedMethods = [ 'get', 'put', 'post', 'del' ];
 
 var setupRapidapi = function ( config, supportedMethods, server ) {
     if ( config && config.redis ) {
-        var rH = require ( path.resolve ( 'rapidapiHandlers.js' ) );
+        var rH = require ( './rapidapiHandlers.js' );
 
         R.forEach ( function ( method ) {
             console.log ( 'registering ' + method );
