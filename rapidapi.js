@@ -1,3 +1,4 @@
+var config = require ( 'config' );
 var restify = require ( 'restify' );
 var path = require ( 'path' );
 var packageJson = require ( './package.json' );
@@ -52,15 +53,15 @@ var setupRapidapi = function ( config, supportedMethods, server ) {
     return server;
 };
 
-if ( config && config.redis ) {
-    redisClient = redis.createClient ( config.redis.port || 6379, config.redis.host || 'localhost' );
-}
-
 module.exports = function ( routeRoot, config, callBack ) {
     var server = restify.createServer ( {
         name: packageJson.name,
         version: packageJson.version
     } );
+
+    if ( config && config.redis ) {
+        redisClient = redis.createClient ( config.redis.port || 6379, config.redis.host || 'localhost' );
+    }
 
     server.use ( restify.queryParser () );
     server.use ( restify.CORS () );
