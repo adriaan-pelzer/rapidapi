@@ -4,7 +4,7 @@ var packageJson = require ( './package.json' );
 var recursive = require ( 'recursive-readdir' );
 var hl = require ( 'highland' );
 var R = require ( 'ramda' );
-var redis = require ( 'redis' );
+var redis = require ( 'redis' ), redisClient;
 
 var methodHandlerFactory = R.curry ( function ( method, routeHandler ) {
     var successCode = {
@@ -43,6 +43,8 @@ var setupRapidapi = function ( config, supportedMethods, server ) {
     if ( config && config.redis ) {
         var rH = require ( './rapidapiHandlers.js' );
 
+        redisClient = redis.createClient ( config.redis.port || 6379, config.redis.host || 'localhost' );
+
         R.forEach ( function ( method ) {
             console.log ( 'registering ' + method );
             server[method] ( '.*', methodHandlerFactory ( method )( rH[method] ) );
@@ -64,7 +66,7 @@ module.exports = function ( routeRoot, config, callBack ) {
 
     server.use ( function ( req, res, next ) {
         if ( config && config.redis ) {
-            req.redisClient = redis.createClient ( config.redis.port || 6379, config.redis.host || 'localhost' );
+            req.redisClient = redisClient;
         }
         req.restify = restify;
         next ();
