@@ -43,8 +43,6 @@ var setupRapidapi = function ( config, supportedMethods, server ) {
     if ( config && config.redis ) {
         var rH = require ( './rapidapiHandlers.js' );
 
-        redisClient = redis.createClient ( config.redis.port || 6379, config.redis.host || 'localhost' );
-
         R.forEach ( function ( method ) {
             console.log ( 'registering ' + method );
             server[method] ( '.*', methodHandlerFactory ( method )( rH[method] ) );
@@ -53,6 +51,10 @@ var setupRapidapi = function ( config, supportedMethods, server ) {
 
     return server;
 };
+
+if ( config && config.redis ) {
+    redisClient = redis.createClient ( config.redis.port || 6379, config.redis.host || 'localhost' );
+}
 
 module.exports = function ( routeRoot, config, callBack ) {
     var server = restify.createServer ( {
