@@ -53,7 +53,7 @@ var setupRapidapi = function ( config, supportedMethods, server ) {
     return server;
 };
 
-module.exports = function ( routeRoot, config, callBack ) {
+module.exports = function ( config, callBack ) {
     var server = restify.createServer ( {
         name: packageJson.name,
         version: packageJson.version
@@ -83,11 +83,11 @@ module.exports = function ( routeRoot, config, callBack ) {
         next ();
     } );
 
-    if ( routeRoot ) {
-        return hl.wrapCallback ( recursive )( routeRoot )
+    if ( config.routeRoot ) {
+        return hl.wrapCallback ( recursive )( config.routeRoot )
             .flatMap ( hl )
             .flatMap ( function ( route ) {
-                var getRoutePath = R.compose ( R.replace ( routeRoot, '' ), R.replace ( new RegExp ( path.sep + '[^' + path.sep + ']*$' ), '' ) );
+                var getRoutePath = R.compose ( R.replace ( config.routeRoot, '' ), R.replace ( new RegExp ( path.sep + '[^' + path.sep + ']*$' ), '' ) );
                 var getRouteAction = R.compose ( R.add ( path.sep + ':' ), R.invoker ( 1, 'join' )( path.sep + ':' ), R.filter ( R.not ( R.or ( R.eq ( 'js' ), R.eq ( 'index' ) ) ) ), R.flatten, R.map ( R.split ( '-' ) ), R.split ( '.' ), R.last, R.split ( path.sep ) );
 
                 var routeName = R.compose ( R.replace ( /:$/, '' ), R.invoker ( 1, 'join' )( '' ), R.ap ( [ getRoutePath, getRouteAction ] ) );
