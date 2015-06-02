@@ -28,13 +28,12 @@ This model is only enabled if the *docRoot* parameter is provided at startup, an
     var rapidapi = require ( 'rapidapi' );
     var config = {
         routeRoot: './routes',
+        enableRapidapi: true,
         redis: {
             host: REDIS_HOST,
             port: REDIS_PORT
         },
-        server: {
-            port: SERVER_PORT
-        }
+        port: SERVER_PORT
     };
 
     rapidapi ( config, function ( error, server ) {

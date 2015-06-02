@@ -1,6 +1,5 @@
 var hl = require ( 'highland' );
 var R = require ( 'ramda' );
-var inspect = require ( 'eyes' ).inspector ( { maxLangth: 0 } );
 
 var callSuccess = R.curry ( function ( callBack, data ) {
     return callBack ( null, data );
@@ -85,14 +84,24 @@ var redisRemListParms = R.curry ( function ( redisKey, oldObjectJson, newObjectJ
         .map ( R.flip ( R.concat )( [ redisKey ] ) );
 } );
 
+var errorStreams = function ( type ) {
+    return {
+        notfound: errorStream ( {
+            type: 'NotFoundError',
+            message: 'Object not found'
+        } ),
+        badrequest: errorStream ( {
+            type: 'BadRequestError',
+            message: 'Object already exists'
+        } ),
+    }[type];
+};
+
 module.exports = {
     get: function ( req, callBack ) {
         var streamsByType = R.curry ( function ( redisKey, type ) {
             return {
-                none: errorStream ( {
-                    type: 'NotFoundError',
-                    message: 'Object not found'
-                } ),
+                none: errorStreams ( 'notfound' ),
                 string: redisJsonFromKey ( req.redisClient, redisKey ),
                 zset: redisCommand ( req.redisClient, 'zrange', [ redisKey, req.query.low || 0, req.query.high || -1 ] )
                     .flatMap ( hl )
@@ -115,10 +124,7 @@ module.exports = {
     put: function ( req, callBack ) {
         var streamsByType = R.curry ( function ( redisKey, type ) {
             return {
-                none: errorStream ( {
-                    type: 'NotFoundError',
-                    message: 'Object not found'
-                } ),
+                none: errorStreams ( 'notfound' ),
                 string: redisJsonFromKey ( req.redisClient, redisKey ),
                 zset: errorStream ( 'Lists are not directly writable' )
             }[type] || errorStream ( 'Wrong resource type: ' + type );
@@ -135,13 +141,17 @@ module.exports = {
                             .flatMap ( function ( oldObjectJson ) {
                                 return hl ( [ newObjectJson ] )
                                     .flatMap ( redisSetObject ( req.redisClient, redisKey ) )
+                                    .filter ( R.compose ( R.eq ( 'Array' ), R.type, R.prop ( 'lists' ) ) )
                                     .flatMap ( redisAddListParms ( redisKey, oldObjectJson ) )
                                     .flatMap ( redisCommand ( req.redisClient, 'zadd' ) )
                                     .collect ()
+                                    .otherwise ( hl ( [ 'arbitrary' ] ) )
                                     .map ( R.always ( newObjectJson ) )
+                                    .filter ( R.compose ( R.eq ( 'Array' ), R.type, R.prop ( 'lists' ) ) )
                                     .flatMap ( redisRemListParms ( redisKey, oldObjectJson ) )
                                     .flatMap ( redisCommand ( req.redisClient, 'zrem' ) )
-                                    .collect ();
+                                    .collect ()
+                                    .otherwise ( hl ( [ 'arbitrary' ] ) );
                             } );
                     } )
             } )
@@ -154,10 +164,7 @@ module.exports = {
             return {
                 none: hl ( [ newObjectJson ] ),
                 zset: errorStream ( 'Lists are not directly writable' )
-            }[type] || errorStream ( {
-                type: 'BadRequestError',
-                message: 'Object already exists'
-            } );
+            }[type] || errorStreams ( 'badrequest' );
         } );
 
         hl ( req )
@@ -169,9 +176,11 @@ module.exports = {
                         return redisCommand ( req.redisClient, 'type', redisKey )
                             .flatMap ( streamsByType ( newObjectJson ) )
                             .flatMap ( redisSetObject ( req.redisClient, redisKey ) )
+                            .filter ( R.compose ( R.eq ( 'Array' ), R.type, R.prop ( 'lists' ) ) )
                             .flatMap ( redisAddListParms ( redisKey, null ) )
                             .flatMap ( redisCommand ( req.redisClient, 'zadd' ) )
-                            .collect ();
+                            .collect ()
+                            .otherwise ( hl ( [ 'arbitrary' ] ) );
                     } )
             } )
             .stopOnError ( callBack )
@@ -181,10 +190,7 @@ module.exports = {
     del: function ( req, callBack ) {
         var streamsByType = R.curry ( function ( redisKey, type ) {
             return {
-                none: errorStream ( {
-                    type: 'NotFoundError',
-                    message: 'Object not found'
-                } ),
+                none: errorStreams ( 'notfound' ),
                 string: redisJsonFromKey ( req.redisClient, redisKey ),
                 zset: errorStream ( 'Lists are not directly deletable' )
             }[type] || errorStream ( 'Wrong resource type: ' + type );
@@ -196,12 +202,14 @@ module.exports = {
                 return hl ( [
                     redisCommand ( req.redisClient, 'type', redisKey )
                         .flatMap ( streamsByType ( redisKey ) )
+                        .filter ( R.compose ( R.eq ( 'Array' ), R.type, R.prop ( 'lists' ) ) )
                         .map ( redisRemListParms ( redisKey ) )
                         .flatMap ( function ( redisRemListParmsPartial ) {
                             return redisRemListParmsPartial ( null );
                         } )
                         .flatMap ( redisCommand ( req.redisClient, 'zrem' ) )
-                        .collect (),
+                        .collect ()
+                        .otherwise ( hl ( [ 'arbitrary' ] ) ),
                     redisCommand ( req.redisClient, 'del', redisKey )
                 ] );
             } )
