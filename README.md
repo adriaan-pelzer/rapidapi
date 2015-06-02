@@ -22,19 +22,12 @@ This model is only enabled if the *docRoot* parameter is provided at startup, an
 
 - Install node.js. Head to the [node.js download page](http://nodejs.org/download/), and download and install the latest stable version.
 
-- Install all rapidapi's dependencies:
-
-```
-    cd wherever/you/installed/rapidapi
-    npm install
-```
-
-- In your own code: (remember to replace REDIS_HOST, REDIS_PORT, and SERVER_PORT with your own config)
+- In your code: (remember to replace REDIS_HOST, REDIS_PORT, and SERVER_PORT with your own config)
 
 ```
     var rapidapi = require ( 'rapidapi' );
-    var docroot = './routes';
     var config = {
+        routeRoot: './routes',
         redis: {
             host: REDIS_HOST,
             port: REDIS_PORT
@@ -44,7 +37,7 @@ This model is only enabled if the *docRoot* parameter is provided at startup, an
         }
     };
 
-    rapidapi ( docroot, config, function ( error, server ) {
+    rapidapi ( config, function ( error, server ) {
         if ( error ) {
             console.error ( error );
             return;
