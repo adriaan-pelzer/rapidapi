@@ -153,7 +153,7 @@ module.exports = {
                                     .collect ()
                                     .otherwise ( hl ( [ 'arbitrary' ] ) );
                             } );
-                    } )
+                    } );
             } )
             .stopOnError ( callBack )
             .map ( R.always ( 'Object successfully updated' ) )
@@ -181,7 +181,7 @@ module.exports = {
                             .flatMap ( redisCommand ( req.redisClient, 'zadd' ) )
                             .collect ()
                             .otherwise ( hl ( [ 'arbitrary' ] ) );
-                    } )
+                    } );
             } )
             .stopOnError ( callBack )
             .map ( R.always ( 'Object successfully added' ) )

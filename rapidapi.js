@@ -121,7 +121,7 @@ module.exports = function ( config, callBack ) {
 };
 
 if ( ! module.parent ) {
-    module.exports ( 'routes', { redis: {} }, function ( error, server ) {
+    module.exports ( { enableRapidapi: true, redis: {} }, function ( error, server ) {
         if ( error ) {
             console.error ( error );
             return;
