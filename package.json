@@ -1,6 +1,6 @@
 {
   "name": "rapidapi",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A schema-less API, which lets storing & retrieving your stuff get out of your way",
   "main": "rapidapi.js",
   "dependencies": {
