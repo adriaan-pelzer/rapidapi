@@ -76,6 +76,9 @@ module.exports = function ( config, callBack ) {
     } );
 
     server.use ( function ( req, res, next ) {
+        res.setHeader ( 'Access-Control-Allow-Origin', '*' );
+        res.setHeader ( 'Access-Control-Allow-Methods', '*' );
+        res.setHeader ( 'Access-Control-Allow-Headers', '*' );
         res.setHeader ( 'Cache-Control', 'private, no-cache, no-store, must-revalidate' );
         res.setHeader ( 'Expires', '-1' );
         res.setHeader ( 'Pragma', 'no-cache' );
