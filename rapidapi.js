@@ -88,6 +88,7 @@ module.exports = function ( config, callBack ) {
 
     if ( config.routeRoot ) {
         return hl.wrapCallback ( recursive )( config.routeRoot )
+            .map ( R.compose ( R.reverse, R.sortBy ( R.compose ( R.length, R.split ( '/' ) ) ) ) )
             .flatMap ( hl )
             .flatMap ( function ( route ) {
                 var getRoutePath = R.compose ( R.replace ( config.routeRoot, '' ), R.replace ( new RegExp ( path.sep + '[^' + path.sep + ']*$' ), '' ) );
