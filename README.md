@@ -4,21 +4,11 @@ rapidapi
 Store your stuff, rapidly ... rapidapidly.
 ---------------------------------------
 
-*A schema-less API, which lets storing &amp; retrieving your stuff get out of your way.*
+*A docroot-like API, which lets storing &amp; retrieving your stuff get out of your way.*
 
-Rapidapi (pronounced *rah-pee-dah-pee*) is a simple key/value store behind an HTTP API, that supports a CREATE/READ/UPDATE/DELETE (CRUD) model, with support for dehydrated lists (more about these later).
-
-The CRUD model is only enabled if the configuration rapidapi is provided with at startup contains a *redis* attribute, even if it is empty.
-
-If it is empty, the redis settings will default to **host='localhost'** and **port=6379**.
-
-Rapidapi also supports a *docroot* style set of user-defined query handlers, which can be used to build custom endpoints, in addition to the normal CRUD model described above.
-
-This model is only enabled if the *docRoot* parameter is provided at startup, and the *docroot* folder is not empty.
+_Version 1.0 of rapidapi supported schema-less object storage with dehydrated lists - this functionality has been removed, but can still be found in branch 1.0.12_
 
 ##INSTALL
-
-- Install redis. Head to the [redis download page](http://redis.io/download), and download and install the latest stable version.
 
 - Install node.js. Head to the [node.js download page](http://nodejs.org/download/), and download and install the latest stable version.
 
@@ -27,196 +17,26 @@ This model is only enabled if the *docRoot* parameter is provided at startup, an
 ```
     var rapidapi = require ( 'rapidapi' );
     var config = {
-        routeRoot: './routes',
-        enableRapidapi: true,
-        redis: {
-            host: REDIS_HOST,
-            port: REDIS_PORT
-        },
-        port: SERVER_PORT
+        routeRoot: './routes'
     };
 
     rapidapi ( config, function ( error, server ) {
         if ( error ) {
-            console.error ( error );
-            return;
+            return console.error ( error );
         }
 
-        server.listen ( config.server.port, function () {
-            console.log ( '%s listening at %sError', server.name, server.url );
-        } );
+        console.log ( 'ready' );
     } );
 
 ```
 
 Just like that, you're ready to store your stuff!
 
-##Schema-free CRUD model
-
-###CREATE
-
-POST http://**host**:**port**/**key** ( JSON **value** in the body of the POST )
-
-HTTP 201 "Object successfully added"
-
-*fails if object already exists*
-
-###READ
-
-GET http://**host**:**port**/**key**
-
-HTTP 200 *The JSON you've POSTed against this key*
-
-###UPDATE
-
-PUT http://**host**:**port**/**key** ( JSON **value** in the body of the POST )
-
-HTTP 201 "Object successfully updated"
-
-*fails if object doesn't exist*
-
-###DELETE
-
-DELETE http://**host**:**port**/**key**
-
-HTTP 200 "Object successfully deleted"
-
-*fails if object doesn't exist*
-
-###Dehydrated Lists
-
-When an object contains a *lists* array, the object's key will be added to a *dehydrated list* for each of the items in the *lists* array.
-
-####List item format
-
-```
-    {
-        listKey: LISTKEY,
-        indexKey: INDEXKEY
-    }
-```
-
-- LISTKEY: the name of the dehydrated list to add this item to
-- INDEXKEY: the object attribute to index items in the list on
-
-**For example:**
-Posting the following object to the API endpoint http://**host**:**port**/object/12345:
-
-```
-    {
-        id: 12345
-        time: 98765
-        lists: [
-            listKey: 'objects:bytimeError',
-            indexKey: 'time'
-        ]
-    }
-```
-
-will result in the following endpoints being created:
-
-```
-    http://**host**:**port**/object/12345
-```
-
-which returns the data:
-
-```
-    {
-        id: 12345
-        time: 98765
-        lists: [
-            listKey: 'objects:bytimeError',
-            indexKey: 'time'
-        ]
-    }
-```
-
-AND
-
-```
-    http://**host**:**port**/objects/bytime
-```
-
-which returns the data:
-
-```
-    [
-        {
-            id: 12345
-            time: 98765
-            lists: [
-                listKey: 'objects:bytimeError',
-                indexKey: 'time'
-            ]
-        }
-    ]
-```
-
-If, additionally, the following object is posted to API endpoint http://**host**:**port**/object/12346:
-
-```
-    {
-        id: 12346
-        time: 98764
-        lists: [
-            listKey: 'objects:bytimeError',
-            indexKey: 'time'
-        ]
-    }
-```
-
-will result in the following endpoint being created:
-
-```
-    http://**host**:**port**/object/12346
-```
-
-which returns the data:
-
-```
-    {
-        id: 12346
-        time: 98764
-        lists: [
-            listKey: 'objects:bytimeError',
-            indexKey: 'time'
-        ]
-    }
-```
-
-and the following endpoint being updated:
-
-```
-    http://**host**:**port**/objects/bytime
-```
-
-to return the data:
-
-```
-    [
-        {
-            id: 12346
-            time: 98764
-            lists: [
-                listKey: 'objects:bytimeError',
-                indexKey: 'time'
-            ]
-        },
-        {
-            id: 12345
-            time: 98765
-            lists: [
-                listKey: 'objects:bytimeError',
-                indexKey: 'time'
-            ]
-        }
-    ]
-```
-
 ##DOCROOT model
 
-If the *docRoot* parameter is provided at startup, its value is taken to be a folder. This folder is then parsed recursively, and its contents is exposed as API endpoints, like a directory tree would be exposed on a web server.
+If the *docRoot* attribute is provided in the configuration parameter, its value is taken to be a folder relative to rapidapi's module parent. This folder is then parsed recursively, and its contents is exposed as API endpoints, like a directory tree would be exposed on a web server.
+
+If it is not provided, it defaults to *routes*.
 
 If a file in this structure is called *index.js*, its associated endpoint will be the path it is in. Otherwise, the filename will act as a resource parameter, and exposed as such in the request attribute
 
@@ -291,7 +111,19 @@ Viable error messages are:
 };
 ```
 
-**for example:**
+Error can also be structure as such:
+
+```
+    {
+        code: HTTPCODE,
+        message: ERRORMESSAGE
+    }
+```
+
+HTTPCODE can be replaced by an explicit HTTP code to return with the error message.
+
+
+**handler example:**
 
 In a file stored in **docRoot**/divide/numerator-denominator.js:
 
@@ -300,6 +132,13 @@ module.exports = {
     get: function ( req, callBack ) {
         var n = parseInt ( req.params.numerator, 10 );
         var d = parseInt ( req.params.denominator, 10 );
+
+        if ( d === 6379 ) {
+            return callBack ( {
+                code: 201,
+                message: 'Easter egg!'
+            } );
+        }
 
         if ( d === 0  ) {
             return callBack ( {

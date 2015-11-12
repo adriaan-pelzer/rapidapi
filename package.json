@@ -1,19 +1,19 @@
 {
   "name": "rapidapi",
-  "version": "1.0.13",
-  "description": "A schema-less API, which lets storing & retrieving your stuff get out of your way",
+  "version": "1.1.0",
+  "description": "A docroot-like API, which lets storing & retrieving your stuff get out of your way",
   "main": "rapidapi.js",
   "dependencies": {
-    "restify": "~2.8.5",
-    "recursive-readdir": "~1.2.1",
-    "highland": "~2.3.0",
-    "ramda": "~0.10.0",
-    "redis": "~0.12.1",
-    "config": "~1.12.0"
+    "highland": "^2.5.1",
+    "inspect-log": "0.0.3",
+    "path": "^0.12.7",
+    "ramda": "^0.18.0",
+    "recursive-readdir": "^1.3.0",
+    "restify": "^4.0.3"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node api.js"
+    "test": "cd test && node app.js"
   },
   "repository": {
     "type": "git",
