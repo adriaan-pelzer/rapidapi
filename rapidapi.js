@@ -29,7 +29,6 @@ module.exports = function ( config, callBack ) {
     } );
 
     S.use ( r.queryParser () );
-    S.use ( r.bodyParser () );
     S.use ( r.CORS () );
 
     S.use ( function ( req, res, next ) {
