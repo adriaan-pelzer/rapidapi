@@ -66,9 +66,7 @@ module.exports = function ( config, callBack ) {
                     console.log ( 'registering %s on %s', method, path );
 
                     return S[method] ( path, function ( req, res, next ) {
-                        handler ( R.merge ( req, {
-                            res: res
-                        } ), function ( error, response ) {
+                        handler ( req, function ( error, response ) {
                             var successCode = { post: 201 }[method] || 200;
 
                             if ( error ) {
