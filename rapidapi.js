@@ -75,15 +75,35 @@ module.exports = function ( config, callBack ) {
                                 }
 
                                 if ( error.code ) {
-                                    res.send ( error.code, error.message );
-                                    return next ();
+                                    res.writeHead ( error.code, {
+                                        'Content-Type': 'application/json;charset=UTF-8',
+                                        'Access-Control-Allow-Origin': '*',
+                                        'Access-Control-Allow-Methods': '*',
+                                        'Access-Control-Allow-Headers': '*',
+                                        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+                                        'Expires': '-1',
+                                        'Pragma': 'no-cache'
+                                    } );
+
+                                    res.write ( error.message );
+                                    return res.end ();
                                 }
 
                                 return next ( new r.InternalServerError ( JSON.stringify ( error ) ) );
                             }
 
-                            res.send ( successCode, response );
-                            return next();
+                            res.writeHead ( successCode, {
+                                'Content-Type': 'application/json;charset=UTF-8',
+                                'Access-Control-Allow-Origin': '*',
+                                'Access-Control-Allow-Methods': '*',
+                                'Access-Control-Allow-Headers': '*',
+                                'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+                                'Expires': '-1',
+                                'Pragma': 'no-cache'
+                            } );
+
+                            res.write ( JSON.stringify ( response ) );
+                            return res.end ();
                         } );
                     } );
                 }, pathAttributes.paths );
