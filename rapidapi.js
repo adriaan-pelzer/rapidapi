@@ -5,8 +5,7 @@ const rr = require ( 'recursive-readdir' );
 const P = require ( 'path' );
 const p = require ( './package.json' );
 const I = require ( 'inspect-log' );
-
-let session;
+const sessions = require ( "client-sessions" );
 
 
 const handlerPathToApiPaths = handlerPath => {
@@ -31,13 +30,33 @@ module.exports = ( config, callBack ) => {
         version: p.version
     } );
 
+    /** --------------- EXAMPLE CONFIG
+     * var config = {
+     *      bodyParser: true,
+     *      sessions: {
+     *          secret: 'SECRET_HERE'
+     *      },
+     *      docRoot: './routes'
+     *  }
+     * ---------------- EXAMPLE CONFIG
+     */
 
     if ( config.bodyParser ) {
         S.use ( r.bodyParser () );
     }
     if ( config.sessions ) {
-        session = require ( 'restify-session' ) ( { debug: config.sessions.debug, ttl: config.sessions.ttl } );
-        S.use ( session.sessionManager );
+        S.use ( sessions ( {
+            cookieName: 'session', // cookie name dictates the key name added to the request object
+            secret: config.sessions.secret, // should be a large unguessable string
+            duration: 24 * 60 * 60 * 1000 // how long the session will stay valid in ms
+            // cookie: {
+            //     path: '/api', // cookie will only be sent to requests under '/api'
+            //     maxAge: 60000, // duration of the cookie in milliseconds, defaults to duration above
+            //     ephemeral: false, // when true, cookie expires when the browser closes
+            //     httpOnly: true, // when true, cookie is not accessible from javascript
+            //     secure: false // when true, cookie will only be sent over SSL. use key 'secureProxy' instead if you handle SSL not in your node process
+            // }
+        } ) );
     }
     S.use ( r.queryParser () );
     S.use ( r.CORS () );
