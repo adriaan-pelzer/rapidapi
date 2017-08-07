@@ -1,20 +1,23 @@
-var H = require ( 'highland' );
-var R = require ( 'ramda' );
-var r = require ( 'restify' );
-var rr = require ( 'recursive-readdir' );
-var P = require ( 'path' );
-var p = require ( './package.json' );
-var I = require ( 'inspect-log' );
+const H = require ( 'highland' );
+const R = require ( 'ramda' );
+const r = require ( 'restify' );
+const rr = require ( 'recursive-readdir' );
+const P = require ( 'path' );
+const p = require ( './package.json' );
+const I = require ( 'inspect-log' );
 
-var handlerPathToApiPaths = function ( handlerPath ) {
-    var handlerPathToApiPath = function ( handlerPath ) {
-        return '/' + R.map ( function ( partial ) {
-            if ( partial.match ( /.js$/ ) ) {
-                return ':' + partial.replace ( '.js', '' ).replace ( /\-/g, '/:' );
-            }
+let session;
 
-            return partial;
-        }, R.reject ( R.equals ( 'index.js' ), R.tail ( handlerPath.split ( '/' ) ) ) ).join ( '/' );
+
+const handlerPathToApiPaths = handlerPath => {
+    const handlerPathToApiPath = handlerPath => {
+        return '/' + R.map ( ( partial ) => {
+                if ( partial.match ( /.js$/ ) ) {
+                    return ':' + partial.replace ( '.js', '' ).replace ( /\-/g, '/:' );
+                }
+
+                return partial;
+            }, R.reject ( R.equals ( 'index.js' ), R.tail ( handlerPath.split ( '/' ) ) ) ).join ( '/' );
     };
 
     return R.reject ( R.equals ( '' ), [
@@ -22,17 +25,24 @@ var handlerPathToApiPaths = function ( handlerPath ) {
     ] );
 };
 
-module.exports = function ( config, callBack ) {
-    var S = r.createServer ( {
+module.exports = ( config, callBack ) => {
+    let S = r.createServer ( {
         name: p.name,
         version: p.version
     } );
 
+
+    if ( config.bodyParser ) {
+        S.use ( r.bodyParser () );
+    }
+    if ( config.sessions ) {
+        session = require ( 'restify-session' ) ( { debug: config.sessions.debug, ttl: config.sessions.ttl } );
+        S.use ( session.sessionManager );
+    }
     S.use ( r.queryParser () );
-    S.use ( r.bodyParser () );
     S.use ( r.CORS () );
 
-    S.use ( function ( req, res, next ) {
+    S.use ( ( req, res, next ) => {
         res.setHeader ( 'Access-Control-Allow-Origin', '*' );
         res.setHeader ( 'Access-Control-Allow-Methods', '*' );
         res.setHeader ( 'Access-Control-Allow-Headers', '*' );
@@ -43,10 +53,10 @@ module.exports = function ( config, callBack ) {
         next ();
     } );
 
-    H.wrapCallback ( rr )( config.docRoot || 'routes' )
+    H.wrapCallback ( rr ) ( config.docRoot || 'routes' )
         .map ( R.compose ( R.reverse, R.sortBy ( R.compose ( R.length, R.split ( '/' ) ) ) ) )
         .sequence ()
-        .map ( function ( path ) {
+        .map ( path => {
             return {
                 handlers: require ( P.resolve ( path ) ),
                 paths: handlerPathToApiPaths ( path )
@@ -54,25 +64,25 @@ module.exports = function ( config, callBack ) {
         } )
         .append ( 'OK' )
         .errors ( R.unary ( callBack ) )
-        .each ( function ( pathAttributes ) {
+        .each ( pathAttributes => {
             if ( pathAttributes === 'OK' ) {
-                return S.listen ( process.env.PORT || 5000, function () {
+                return S.listen ( process.env.PORT || 5000, () => {
                     console.log ( '%s listening at %s', S.name, S.url );
                     callBack ( null, S );
                 } );
             }
 
-            return R.mapObjIndexed ( function ( handler, method, handlers ) {
-                return R.map ( function ( path ) {
+            return R.mapObjIndexed ( ( handler, method, handlers ) => {
+                return R.map ( path => {
                     console.log ( 'registering %s on %s', method, path );
 
-                    return S[method] ( path, function ( req, res, next ) {
-                        handler ( req, function ( error, response ) {
-                            var successCode = { post: 201 }[method] || 200;
+                    return S[ method ] ( path, ( req, res, next ) => {
+                        handler ( req, ( error, response ) => {
+                            let successCode = { post: 201 }[ method ] || 200;
 
                             if ( error ) {
-                                if ( error.type && R.compose ( R.equals ( 'Function' ), R.type )( r[error.type] ) ) {
-                                    return next ( new r[error.type] ( error.message ) );
+                                if ( error.type && R.compose ( R.equals ( 'Function' ), R.type ) ( r[ error.type ] ) ) {
+                                    return next ( new r[ error.type ] ( error.message ) );
                                 }
 
                                 if ( error.code ) {
